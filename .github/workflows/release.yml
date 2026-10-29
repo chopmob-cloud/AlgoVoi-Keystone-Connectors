@@ -21,8 +21,6 @@ env:
   CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
   CIBW_SKIP: "*-musllinux* *_i686 *-win32 pp*"
   CIBW_ARCHS_LINUX: "x86_64 aarch64"
-  CIBW_TEST_COMMAND: "python -c \"import {package}; print({package}.__name__)\""
-  CIBW_TEST_REQUIRES: "algovoi-execution-ref"
 
 jobs:
   packages:
@@ -67,6 +65,25 @@ jobs:
         with:
           name: dist-${{ matrix.package }}-${{ runner.os }}
           path: wheelhouse/*
+
+  tests:
+    needs: packages
+    name: tests ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.packages.outputs.matrix).package }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run the package's test suite against the source tree
+        run: |
+          python -m pip install --upgrade pip pytest algovoi-execution-ref
+          cd ${{ matrix.package }}
+          python -m pytest tests -q
 
   publish:
     needs: wheels
