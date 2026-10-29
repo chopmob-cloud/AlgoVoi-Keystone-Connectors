@@ -1,0 +1,8 @@
+algovoi-keystone-azure-servicebus
+Copyright 2026 AlgoVoi
+
+This product includes software developed by AlgoVoi.
+Licensed under the Apache License, Version 2.0.
+
+Built on the AlgoVoi substrate: RFC 8785 (JCS) canonicalisation + SHA-256,
+producing content-addressed execution_ref evidence recomputable offline.

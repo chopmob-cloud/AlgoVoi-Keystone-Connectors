@@ -1,0 +1,82 @@
+name: release
+
+# The only supported publish path for the connector family.
+#
+# Hand-built uploads are what left the 0.1.0 releases with 12 wheels and no
+# sdist at all (so macOS and any non-glibc platform had nothing to install).
+# This workflow builds CPython 3.10-3.13 for manylinux x86_64 + aarch64 and
+# Windows amd64, builds an sdist for everything else, and publishes on a tag.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to PyPI (otherwise build only)"
+        type: boolean
+        default: false
+
+env:
+  CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+  CIBW_SKIP: "*-musllinux* *_i686 *-win32 pp*"
+  CIBW_ARCHS_LINUX: "x86_64 aarch64"
+  CIBW_TEST_COMMAND: "python -c \"import {package}; print({package}.__name__)\""
+  CIBW_TEST_REQUIRES: "algovoi-execution-ref"
+
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          pkgs=$(ls -d keystone-* | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "matrix={\"package\":$pkgs}" >> "$GITHUB_OUTPUT"
+          echo "$pkgs"
+
+  wheels:
+    needs: packages
+    name: wheels ${{ matrix.package }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.packages.outputs.matrix).package }}
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install cibuildwheel
+        run: python -m pip install --upgrade pip cibuildwheel build
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse ${{ matrix.package }}
+      - name: Build sdist (linux job only, once per package)
+        if: runner.os == 'Linux'
+        run: python -m build --sdist --outdir wheelhouse ${{ matrix.package }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.package }}-${{ runner.os }}
+          path: wheelhouse/*
+
+  publish:
+    needs: wheels
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # preferred: PyPI trusted publishing, no token in secrets
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: dist
+      - name: List what will be uploaded
+        run: ls -la dist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

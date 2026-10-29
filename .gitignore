@@ -1,0 +1,22 @@
+# build artefacts — never commit compiled output or stale metadata
+build/
+dist/
+wheelhouse/
+*.egg-info/
+*.pyd
+*.so
+*.c
+*.obj
+*.lib
+*.exp
+__pycache__/
+.pytest_cache/
+.venv/
+*.whl
+*.tar.gz
+
+# os / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

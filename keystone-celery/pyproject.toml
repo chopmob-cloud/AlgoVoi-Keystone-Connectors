@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=70", "Cython>=3.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "algovoi-keystone-celery"
+version = "0.1.1"
+description = "Bind Celery task dispatch to the AlgoVoi keystone -- wrap a task or app and every apply_async / delay / send_task gets a content-addressed execution_ref (keystone-only edition, Apache-2.0)"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "AlgoVoi", email = "chopmob@gmail.com" }]
+keywords = ["celery", "task-queue", "async", "worker", "dispatch", "keystone", "execution_ref", "jcs", "rfc8785", "algovoi"]
+requires-python = ">=3.10"
+dependencies = ["algovoi-execution-ref>=0.1.0"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Distributed Computing",
+]
+
+[project.urls]
+Homepage = "https://docs.algovoi.co.uk/keystone-connectors"
+Documentation = "https://docs.algovoi.co.uk/keystone-connectors"
+Repository = "https://github.com/chopmob-cloud/AlgoVoi-Keystone-Connectors"
+Issues = "https://github.com/chopmob-cloud/AlgoVoi-Keystone-Connectors/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["algovoi_keystone_celery*"]
+
+[tool.setuptools.package-data]
+"algovoi_keystone_celery" = ["*.so", "*.pyd"]
+
+[tool.setuptools.exclude-package-data]
+"algovoi_keystone_celery" = ["*.c", "*.pyx", "*.pxd"]
