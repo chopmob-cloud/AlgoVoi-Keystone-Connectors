@@ -53,6 +53,11 @@ jobs:
           python-version: "3.12"
       - name: Install cibuildwheel
         run: python -m pip install --upgrade pip cibuildwheel build
+      - name: Enable QEMU (aarch64 manylinux under emulation)
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse ${{ matrix.package }}
       - name: Build sdist (linux job only, once per package)
@@ -67,9 +72,6 @@ jobs:
     needs: wheels
     if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
     runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write   # preferred: PyPI trusted publishing, no token in secrets
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -78,5 +80,10 @@ jobs:
           path: dist
       - name: List what will be uploaded
         run: ls -la dist
+      # Token-based for now. Preferred long-term is PyPI trusted publishing:
+      # add a pending publisher for this repo + workflow on PyPI, then swap
+      # this step for `id-token: write` + gh-action-pypi-publish with no password.
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
