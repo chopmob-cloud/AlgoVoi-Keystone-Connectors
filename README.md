@@ -30,6 +30,7 @@ using RFC 8785 (JCS) canonicalisation and SHA-256. Records drop straight into
 | `algovoi-keystone-pinecone` | Pinecone upserts | pinecone-client |
 | `algovoi-keystone-qdrant` | Qdrant upserts | qdrant-client |
 | `algovoi-keystone-archive` | post-quantum archive `notarize` (decision -> sealed entry) | any async archive client (e.g. algovoi-doc-archive) |
+| `algovoi-keystone-auditor` | archive audit `report` / `attest` / `evidence_pack` (sealed state -> signed report) | any async archive-auditor client (e.g. algovoi-archive-auditor) |
 
 Most connectors depend only on `algovoi-execution-ref`; the wrapped SDK is passed in by the
 caller and is never imported. `algovoi-keystone-archive` additionally depends on
@@ -37,6 +38,13 @@ caller and is never imported. `algovoi-keystone-archive` additionally depends on
 (`archive:bind`) built from the canonical `keystone_ref` primitive, tying the execution to the
 sealed archive entry (`doc_hash`, `entry_id`, `seq`). It is pure Python (no compiled extension).
 `algovoi-keystone-archive` is the storage binding between [AV-RAILS](https://algovoi.co.uk/secure-agent-payments.html) (agentic-commerce decisions) and [AV-VCS](https://docs.algovoi.co.uk/verifiable-compliance-suite) (the Verifiable Compliance Suite that verifies and reports the sealed evidence; [public repo](https://github.com/chopmob-cloud/algovoi-vcs)).
+
+`algovoi-keystone-auditor` is the reporting binding that completes the chain: it wraps the
+archive auditor's `audit_report`, `attest` and `evidence_pack`, and emits an `auditor:bind`
+`binding_ref` tying each signed report to both the authorising decision and the sealed archive
+state it covers (`archive_kid`, `head_receipt_hash`, `entries`, `chain_valid`). It refuses to
+bind a report that attests a broken chain. Together with `algovoi-keystone-archive` it joins
+[AV-RAILS](https://algovoi.co.uk/secure-agent-payments.html) decisions to [AV-VCS](https://docs.algovoi.co.uk/verifiable-compliance-suite) sealed storage and reporting.
 
 Every package in this repository is the **keystone-only edition** (Apache-2.0):
 it binds and emits evidence, and makes no policy decisions of its own.
