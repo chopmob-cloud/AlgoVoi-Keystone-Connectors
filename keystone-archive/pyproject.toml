@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "algovoi-keystone-archive"
+version = "0.1.0"
+description = "Bind post-quantum archive writes to the AlgoVoi keystone -- wrap any async archive client (e.g. algovoi-doc-archive) and every notarize gets a decision-bound execution_ref plus a storage binding_ref tying it to the sealed archive entry (keystone-only edition, Apache-2.0)"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "AlgoVoi", email = "chopmob@gmail.com" }]
+keywords = ["archive", "notarize", "post-quantum", "falcon", "ml-kem", "keystone", "execution_ref", "binding_ref", "jcs", "rfc8785", "algovoi", "doc-archive", "records-vault"]
+requires-python = ">=3.10"
+dependencies = ["algovoi-execution-ref>=0.5.0", "algovoi-keystone-connect>=0.5.0"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Security :: Cryptography",
+    "Topic :: System :: Archiving",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+archive = ["algovoi-doc-archive>=0.1.5"]
+
+[project.urls]
+Homepage = "https://www.algovoi.co.uk"
+Documentation = "https://algovoi.co.uk/docs/keystone-connectors"
+Repository = "https://github.com/chopmob-cloud/AlgoVoi-Keystone-Connectors"
+Issues = "https://github.com/chopmob-cloud/AlgoVoi-Keystone-Connectors/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["algovoi_keystone_archive*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

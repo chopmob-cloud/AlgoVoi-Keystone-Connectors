@@ -1,0 +1,50 @@
+# algovoi-keystone-archive
+
+Bind post-quantum archive writes to the AlgoVoi keystone. Open, Apache-2.0.
+
+The keystone journal binds a commerce **decision** to an **execution**. This connector carries
+that binding onward into durable, post-quantum-signed **storage** — joining the agentic-commerce
+level to the secure-file-storing level so the whole chain is verifiable offline.
+
+Wrap any async archive client exposing `notarize` (the reference implementation is
+[`algovoi-doc-archive`](https://docs.algovoi.co.uk/doc-archive)'s `Archive`: ML-KEM-1024 +
+AES-256-GCM at rest, Falcon-1024-signed hash-linked chain). Every sealed document produces two
+content-addressed refs:
+
+```python
+from algovoi_keystone_archive import keystone_archive_client, verify_binding
+from algovoi_keystone_runtime import Journal, Runtime
+
+# decision_ref comes from the upstream keystone chain (passport -> mandate -> policy -> decision)
+client = keystone_archive_client(archive, decision_ref=decision_ref)
+result = await client.notarize(data=receipt_bytes, title="settlement receipt")
+
+rec = client.executions[-1]
+rec["execution_ref"]   # sha256:JCS({decision_ref, action_type, scope, outcome, executed_at_ms})
+rec["binding_ref"]     # sha256:JCS({action_type:"archive:bind", execution_ref, doc_hash, entry_id, seq})
+
+# anyone can recompute the storage binding offline:
+assert verify_binding(rec["binding_ref"], execution_ref=rec["execution_ref"],
+                      doc_hash=result["doc_hash"], entry_id=result["entry_id"], seq=result["seq"])
+```
+
+- `action_type` is `archive:notarize`; `scope` is the content address (`sha256:<hex>`) of the
+  notarized bytes, so the execution is bound to the exact document.
+- `binding_ref` ties that execution to the archive entry (`doc_hash`, `entry_id`, `seq`).
+- Reads (`retrieve`, `verify_chain`) pass through unbound.
+- A notarize that raises is recorded `FAILED` with no storage binding, and the error re-raised.
+- No archive dependency — the client is duck-typed; `algovoi-doc-archive` is an optional extra.
+
+Both refs recompute with a stock RFC 8785 (JCS) implementation and SHA-256. `tamper_detected`
+and `verify_binding` recompute and compare, so a mutated scope, outcome, timestamp, doc_hash,
+entry_id or seq is caught.
+
+## Install
+
+```bash
+pip install algovoi-keystone-archive
+```
+
+## Licence
+
+Apache-2.0. See `LICENSE` and `NOTICE`.
