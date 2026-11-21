@@ -29,9 +29,13 @@ using RFC 8785 (JCS) canonicalisation and SHA-256. Records drop straight into
 | `algovoi-keystone-httpx` | httpx request sends | httpx |
 | `algovoi-keystone-pinecone` | Pinecone upserts | pinecone-client |
 | `algovoi-keystone-qdrant` | Qdrant upserts | qdrant-client |
+| `algovoi-keystone-archive` | post-quantum archive `notarize` (decision -> sealed entry) | any async archive client (e.g. algovoi-doc-archive) |
 
-The only runtime dependency of every connector is `algovoi-execution-ref`; the
-wrapped SDK is passed in by the caller and is never imported.
+Most connectors depend only on `algovoi-execution-ref`; the wrapped SDK is passed in by the
+caller and is never imported. `algovoi-keystone-archive` additionally depends on
+`algovoi-keystone-connect`, because it emits a second, storage-binding `binding_ref`
+(`archive:bind`) built from the canonical `keystone_ref` primitive, tying the execution to the
+sealed archive entry (`doc_hash`, `entry_id`, `seq`). It is pure Python (no compiled extension).
 
 Every package in this repository is the **keystone-only edition** (Apache-2.0):
 it binds and emits evidence, and makes no policy decisions of its own.
