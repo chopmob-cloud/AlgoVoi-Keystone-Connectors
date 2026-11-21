@@ -36,6 +36,7 @@ caller and is never imported. `algovoi-keystone-archive` additionally depends on
 `algovoi-keystone-connect`, because it emits a second, storage-binding `binding_ref`
 (`archive:bind`) built from the canonical `keystone_ref` primitive, tying the execution to the
 sealed archive entry (`doc_hash`, `entry_id`, `seq`). It is pure Python (no compiled extension).
+`algovoi-keystone-archive` is the storage binding between [AV-RAILS](https://algovoi.co.uk/secure-agent-payments.html) (agentic-commerce decisions) and [AV-VCS](https://docs.algovoi.co.uk/verifiable-compliance-suite) (the Verifiable Compliance Suite that verifies and reports the sealed evidence; [public repo](https://github.com/chopmob-cloud/algovoi-vcs)).
 
 Every package in this repository is the **keystone-only edition** (Apache-2.0):
 it binds and emits evidence, and makes no policy decisions of its own.
