@@ -1,5 +1,8 @@
 # AlgoVoi Keystone Connectors
 
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+
 One repository for the `algovoi-keystone-*` connector family: thin, compiled
 adapters that bind a third-party SDK's outbound call to an AlgoVoi keystone
 decision, so every send carries a content-addressed `execution_ref` that can be
